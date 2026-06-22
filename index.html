@@ -3,649 +3,78 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>P-CORE 중앙통제실</title>
-  <style>
-    * { box-sizing: border-box; }
-
-    :root {
-      --cyan: #67e8f9;
-      --red: #ff4d5e;
-      --dark: #020617;
-      --panel: rgba(2, 10, 24, 0.76);
-      --panel-strong: rgba(2, 10, 24, 0.92);
-    }
-
-    html, body {
-      margin: 0;
-      width: 100%;
-      min-height: 100%;
-      font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", Arial, sans-serif;
-      color: #e9fbff;
-      background: #000;
-      overflow: hidden;
-    }
-
-    body {
-      min-height: 100vh;
-    }
-
-    .stage {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      background:
-        linear-gradient(90deg, rgba(255, 0, 30, 0.16), rgba(0, 240, 255, 0.10)),
-        url("control-room.png") center center / cover no-repeat;
-      isolation: isolate;
-    }
-
-    .stage::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      z-index: -1;
-      background:
-        radial-gradient(circle at 50% 45%, rgba(20, 240, 255, 0.08), transparent 28%),
-        linear-gradient(to bottom, rgba(0,0,0,0.05), rgba(0,0,0,0.72));
-    }
-
-    .stage::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-      background-size: 48px 48px;
-      opacity: 0.5;
-      mix-blend-mode: screen;
-    }
-
-    .quake {
-      animation: quake 0.9s infinite;
-    }
-
-    @keyframes quake {
-      0% { transform: translate(0, 0) rotate(0deg); }
-      12% { transform: translate(1px, -1px) rotate(-0.08deg); }
-      24% { transform: translate(-2px, 1px) rotate(0.08deg); }
-      36% { transform: translate(2px, 1px) rotate(0deg); }
-      48% { transform: translate(-1px, -2px) rotate(0.08deg); }
-      60% { transform: translate(2px, -1px) rotate(-0.08deg); }
-      72% { transform: translate(-2px, 2px) rotate(0deg); }
-      84% { transform: translate(1px, 1px) rotate(0.08deg); }
-      100% { transform: translate(0, 0) rotate(0deg); }
-    }
-
-    .hud {
-      position: relative;
-      z-index: 2;
-      width: min(960px, 94vw);
-      min-height: min(720px, 92vh);
-      padding: 24px;
-      border: 1px solid rgba(103, 232, 249, 0.56);
-      border-radius: 28px;
-      background: linear-gradient(180deg, rgba(2, 8, 23, 0.50), rgba(2, 8, 23, 0.82));
-      box-shadow:
-        0 0 35px rgba(0, 230, 255, 0.20),
-        inset 0 0 35px rgba(0, 230, 255, 0.06);
-      backdrop-filter: blur(4px);
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      align-items: center;
-      padding: 10px 14px;
-      border: 1px solid rgba(103, 232, 249, 0.20);
-      border-radius: 14px;
-      background: rgba(2, 6, 23, 0.58);
-      color: #bae6fd;
-      font-size: 14px;
-      letter-spacing: 1.4px;
-    }
-
-    .warning {
-      color: #ff9ca5;
-      text-shadow: 0 0 10px rgba(255, 0, 50, 0.9);
-      animation: blink 1s infinite;
-      font-weight: 800;
-    }
-
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.28; }
-    }
-
-    .title {
-      margin: 22px 0 8px;
-      text-align: center;
-      font-size: clamp(30px, 6vw, 58px);
-      line-height: 1.1;
-      letter-spacing: -1px;
-      text-shadow:
-        0 0 18px rgba(103, 232, 249, 0.95),
-        0 0 34px rgba(255, 0, 50, 0.35);
-    }
-
-    .subtitle {
-      margin: 0 0 18px;
-      text-align: center;
-      color: #c7f9ff;
-      letter-spacing: 2px;
-      font-size: clamp(13px, 2vw, 16px);
-    }
-
-    .corebot-area {
-      display: flex;
-      justify-content: center;
-      margin: 12px 0 14px;
-    }
-
-    .corebot {
-      position: relative;
-      width: 164px;
-      height: 156px;
-      animation: float 2.5s ease-in-out infinite;
-      filter: drop-shadow(0 0 22px rgba(103, 232, 249, 0.65));
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-9px); }
-    }
-
-    .bot-head {
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      width: 130px;
-      height: 88px;
-      transform: translateX(-50%);
-      border: 3px solid rgba(103, 232, 249, 0.92);
-      border-radius: 28px;
-      background:
-        radial-gradient(circle at 35% 35%, rgba(103,232,249,0.28), transparent 30%),
-        linear-gradient(140deg, rgba(15,23,42,0.98), rgba(8,47,73,0.96));
-      box-shadow: inset 0 0 20px rgba(103, 232, 249, 0.12), 0 0 24px rgba(103,232,249,0.42);
-    }
-
-    .bot-head::before {
-      content: "";
-      position: absolute;
-      top: -28px;
-      left: 50%;
-      width: 4px;
-      height: 28px;
-      transform: translateX(-50%);
-      background: var(--cyan);
-      box-shadow: 0 0 12px var(--cyan);
-    }
-
-    .bot-head::after {
-      content: "";
-      position: absolute;
-      top: -40px;
-      left: 50%;
-      width: 18px;
-      height: 18px;
-      transform: translateX(-50%);
-      border-radius: 50%;
-      background: var(--red);
-      box-shadow: 0 0 18px var(--red);
-    }
-
-    .eye {
-      position: absolute;
-      top: 33px;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: #a5f3fc;
-      box-shadow: 0 0 16px #a5f3fc;
-    }
-
-    .eye.left { left: 30px; }
-    .eye.right { right: 30px; }
-
-    .mouth {
-      position: absolute;
-      left: 50%;
-      bottom: 16px;
-      width: 42px;
-      height: 7px;
-      transform: translateX(-50%);
-      border-radius: 999px;
-      background: rgba(255, 77, 94, 0.82);
-      box-shadow: 0 0 12px rgba(255, 77, 94, 0.88);
-    }
-
-    .bot-body {
-      position: absolute;
-      left: 50%;
-      bottom: 6px;
-      width: 92px;
-      height: 54px;
-      transform: translateX(-50%);
-      border: 3px solid rgba(103, 232, 249, 0.75);
-      border-radius: 18px 18px 26px 26px;
-      background: linear-gradient(150deg, rgba(15,23,42,0.98), rgba(21,94,117,0.95));
-    }
-
-    .bot-label {
-      position: absolute;
-      left: 50%;
-      bottom: 20px;
-      transform: translateX(-50%);
-      color: #ffd6dc;
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: 1px;
-      text-shadow: 0 0 8px rgba(255, 77, 94, 0.9);
-    }
-
-    .speaker {
-      text-align: center;
-      margin-top: -4px;
-      color: #a5f3fc;
-      font-weight: 800;
-      letter-spacing: 2px;
-    }
-
-    .dialog {
-      width: min(780px, 100%);
-      min-height: 170px;
-      margin: 18px auto 18px;
-      padding: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid rgba(103, 232, 249, 0.58);
-      border-radius: 22px;
-      background:
-        linear-gradient(90deg, rgba(255, 77, 94, 0.10), rgba(103, 232, 249, 0.10)),
-        rgba(2, 6, 23, 0.76);
-      box-shadow:
-        inset 0 0 22px rgba(103, 232, 249, 0.10),
-        0 0 24px rgba(0,0,0,0.40);
-    }
-
-    #dialogText {
-      margin: 0;
-      text-align: center;
-      white-space: pre-line;
-      word-break: keep-all;
-      line-height: 1.82;
-      font-size: clamp(18px, 2.7vw, 26px);
-      font-weight: 650;
-      color: #ff4d5e;
-      text-shadow:
-        0 0 6px rgba(255, 77, 94, 0.45),
-        0 0 14px rgba(255, 77, 94, 0.25),
-        0 0 10px rgba(0,0,0,0.75);
-    }
-
-    .buttons, .zep-area {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    button {
-      border: 0;
-      border-radius: 999px;
-      padding: 14px 28px;
-      font-size: 18px;
-      font-weight: 900;
-      color: #00111a;
-      background: linear-gradient(90deg, #67e8f9, #bef264);
-      box-shadow: 0 0 20px rgba(103, 232, 249, 0.42);
-      cursor: pointer;
-      transition: transform 0.16s, box-shadow 0.16s, filter 0.16s;
-    }
-
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 0 30px rgba(103, 232, 249, 0.70);
-      filter: brightness(1.06);
-    }
-
-    .secondary {
-      color: #dbeafe;
-      background: rgba(148, 163, 184, 0.22);
-      border: 1px solid rgba(203, 213, 225, 0.34);
-      box-shadow: none;
-    }
-
-    .name-panel {
-      display: none;
-      width: min(760px, 100%);
-      margin: 18px auto 0;
-      padding: 22px;
-      border: 1px solid rgba(190, 242, 100, 0.42);
-      border-radius: 22px;
-      background: rgba(2, 6, 23, 0.82);
-      box-shadow: 0 0 24px rgba(190, 242, 100, 0.12);
-      text-align: center;
-    }
-
-    .name-panel h2 {
-      margin: 0 0 10px;
-      font-size: clamp(22px, 4vw, 32px);
-      color: #ecfccb;
-    }
-
-    .hint {
-      margin: 0 0 16px;
-      color: #cbd5e1;
-      line-height: 1.6;
-    }
-
-    input {
-      width: min(430px, 100%);
-      padding: 15px 18px;
-      border: 2px solid rgba(103, 232, 249, 0.62);
-      border-radius: 14px;
-      background: rgba(15, 23, 42, 0.92);
-      color: #ffffff;
-      font-size: 20px;
-      outline: none;
-      text-align: center;
-      box-shadow: inset 0 0 14px rgba(103, 232, 249, 0.08);
-    }
-
-    input:focus {
-      border-color: #bef264;
-      box-shadow: 0 0 18px rgba(190, 242, 100, 0.30);
-    }
-
-    .error {
-      min-height: 22px;
-      margin: 12px 0 0;
-      color: #fecaca;
-      font-weight: 700;
-    }
-
-    .sound-note {
-      margin-top: 10px;
-      text-align: center;
-      color: rgba(226, 232, 240, 0.78);
-      font-size: 13px;
-    }
-
-    .hidden { display: none !important; }
-
-
-
-    .corebot-image {
-      width: min(210px, 40vw);
-      max-height: 230px;
-      object-fit: contain;
-      animation: float 2.5s ease-in-out infinite;
-      filter:
-        drop-shadow(0 0 18px rgba(255, 182, 193, 0.75))
-        drop-shadow(0 0 28px rgba(103, 232, 249, 0.45));
-      border-radius: 18px;
-    }
-
-    .fullscreen-tip {
-      position: fixed;
-      left: 50%;
-      bottom: 14px;
-      transform: translateX(-50%);
-      z-index: 10;
-      padding: 8px 14px;
-      border-radius: 999px;
-      border: 1px solid rgba(103, 232, 249, 0.30);
-      background: rgba(2, 6, 23, 0.55);
-      color: rgba(226, 232, 240, 0.80);
-      font-size: 12px;
-      pointer-events: none;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .quake, .corebot, .corebot-image, .warning { animation: none; }
-    }
-
-    @media (max-width: 680px) {
-      .stage { padding: 10px; }
-      .hud { padding: 16px; border-radius: 20px; min-height: 95vh; }
-      .topbar { font-size: 11px; flex-direction: column; gap: 5px; }
-      .corebot-image { width: min(170px, 48vw); margin: -4px 0; }
-      .dialog { min-height: 170px; padding: 18px 14px; }
-      button { width: 100%; font-size: 17px; }
-      .zep-area { flex-direction: column; }
-    }
-  </style>
+  <title>ZEP 확률 문제은행</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main class="stage quake" id="stage">
-    <section class="hud">
-      <div class="topbar">
-        <span></span>
-        <span class="warning">SYSTEM FAILURE · P-CORE OFFLINE</span>
-      </div>
-
-      <h1 class="title">중 앙 통 제 실</h1>
-      <p class="subtitle"></p>
-
-      <div class="corebot-area" aria-label="중앙통제실 AI 로봇 CORE-BOT">
-        <img src="core-bot.png" alt="중앙통제실 AI 로봇 CORE-BOT" class="corebot-image" />
-      </div>
-
-      <div class="speaker">CORE-BOT</div>
-
-      <div class="dialog" aria-live="polite">
-        <p id="dialogText"></p>
-      </div>
-
-      <div class="buttons" id="storyButtons">
-        <button id="nextBtn">시스템 접속</button>
-        <button class="secondary" id="skipBtn">건너뛰기</button>
-      </div>
-
-      <section class="name-panel" id="zepPanel">
-        <h2>중앙통제실 입장 방법</h2>
-        <p class="hint">
-          입장하면서 ID를 반드시 <strong>학번+이름</strong> 형식으로<br />
-          입력하세요.<br />
-          예시: <strong>30101홍길동</strong>
-        </p>
-
-        <div class="zep-area">
-          <button type="button" id="enterZepBtn">중앙통제실 입장</button>
-        </div>
-      </section>
-
-      <p class="sound-note">
-       
+  <main class="app">
+    <section class="hero">
+      <p class="badge">ZEP 연동형 HTML 문제은행</p>
+      <h1>확률과 통계 미션 문제은행</h1>
+      <p class="subtitle">
+        순열과 조합, 확률, 조건부확률 문제를 풀고 미션 코드를 획득하세요.
       </p>
     </section>
-    <div class="fullscreen-tip" id="fullscreenTip">전체 화면 모드 중 ESC로 종료 가능</div>
+
+    <section class="panel setup-panel">
+      <div class="field-group">
+        <label for="studentName">이름</label>
+        <input id="studentName" type="text" placeholder="예: 홍길동" autocomplete="off" />
+      </div>
+
+      <div class="field-group">
+        <label for="categorySelect">시스템 선택</label>
+        <select id="categorySelect"></select>
+      </div>
+
+      <div class="field-group">
+        <label for="levelSelect">난이도</label>
+        <select id="levelSelect">
+          <option value="easy">기초</option>
+          <option value="normal">표준</option>
+          <option value="hard">도전</option>
+        </select>
+      </div>
+
+      <button id="startBtn" class="primary-btn">미션 시작</button>
+    </section>
+
+    <section id="quizPanel" class="panel quiz-panel hidden">
+      <div class="quiz-header">
+        <div>
+          <p id="systemLabel" class="system-label"></p>
+          <h2 id="questionTitle"></h2>
+        </div>
+        <div class="progress-box">
+          <span id="progressText">0 / 0</span>
+        </div>
+      </div>
+
+      <p id="questionText" class="question-text"></p>
+      <div id="choiceList" class="choice-list"></div>
+
+      <div id="feedback" class="feedback hidden"></div>
+
+      <div class="button-row">
+        <button id="checkBtn" class="primary-btn">정답 확인</button>
+        <button id="nextBtn" class="secondary-btn hidden">다음 문제</button>
+        <button id="resetBtn" class="ghost-btn">처음으로</button>
+      </div>
+    </section>
+
+    <section id="resultPanel" class="panel result-panel hidden">
+      <p class="badge">미션 완료</p>
+      <h2 id="resultTitle">결과</h2>
+      <p id="resultSummary"></p>
+      <div class="mission-code-box">
+        <span>획득 코드</span>
+        <strong id="missionCode"></strong>
+      </div>
+      <button id="restartBtn" class="primary-btn">다른 미션 도전</button>
+    </section>
   </main>
 
-  <audio id="introMusic" src="sounds/intro-music.mp3" loop preload="auto"></audio>
-
-  <script>
-    const ZEP_URL = "https://zep.us/play/476ObQ";
-
-    const messages = [
-      "[시스템 부팅 중...]\nP-CORE 중앙통제실 접속을 확인했습니다.",
-      "안녕하세요, 복구 에이전트 여러분.\n저는 P-CORE 중앙관제실의 AI 로봇 CORE-BOT입니다.",
-      "현재, 미래 예측 AI P-CORE 시스템이 정지했습니다.",
-      "도시의 모든 시스템이 멈추고,\n중앙 통제실은 비상 모드에 돌입했습니다.",
-      "P-CORE 시스템을 복구하기 위해서는\n세 개의 핵심 시스템을 다시 가동해야 합니다.",
-      "첫 번째, 순열조합시스템.\n순열과 조합을 이용하여 봉쇄된 접근 코드를 복구해야 합니다.",
-      "두 번째, 확률 시스템.\n확률을 계산하여 가장 안전한 선택인지 판단해야 합니다.",
-      "세 번째, 통계 시스템.\n불규칙한 데이터를 분석하여 최종 복구 단서를 찾아야 합니다.",
-      "세 시스템을 모두 복구하면,\n멈춰버린 미래 예측 AI P-CORE 시스템이 다시 깨어납니다.",
-      "미래 예측 AI P-CORE 시스템은 여러분에게 달렸습니다. 지금부터 복구 작전을 시작합니다. "
-    ];
-
-    const dialogText = document.getElementById("dialogText");
-    const nextBtn = document.getElementById("nextBtn");
-    const skipBtn = document.getElementById("skipBtn");
-    const storyButtons = document.getElementById("storyButtons");
-    const zepPanel = document.getElementById("zepPanel");
-    const enterZepBtn = document.getElementById("enterZepBtn");
-    const stage = document.getElementById("stage");
-
-    let currentIndex = 0;
-    let typingTimer = null;
-    let isTyping = false;
-    const introMusic = document.getElementById("introMusic");
-    let audioStarted = false;
-    let fullscreenRequested = false;
-
-    function enterFullscreen() {
-      if (document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
-        fullscreenRequested = true;
-        return;
-      }
-
-      const element = document.documentElement;
-      const request = element.requestFullscreen || element.webkitRequestFullscreen || element.msRequestFullscreen;
-
-      if (request) {
-        const result = request.call(element);
-        if (result && typeof result.then === "function") {
-          result.then(() => {
-            fullscreenRequested = true;
-          }).catch(() => {
-            fullscreenRequested = false;
-            console.log("화면을 한 번 클릭하면 전체 화면으로 전환됩니다.");
-          });
-        } else {
-          fullscreenRequested = true;
-        }
-      }
-    }
-
-    function setupAutoFullscreen() {
-      // 
-      // 
-      setTimeout(enterFullscreen, 250);
-
-      const unlockFullscreen = () => {
-        enterFullscreen();
-      };
-
-      document.addEventListener("pointerdown", unlockFullscreen, { once: true, capture: true });
-      document.addEventListener("touchstart", unlockFullscreen, { once: true, capture: true });
-      document.addEventListener("keydown", unlockFullscreen, { once: true, capture: true });
-    }
-
-    function startTensionAudio() {
-      if (audioStarted) return;
-      audioStarted = true;
-
-      introMusic.volume = 0.58;
-      introMusic.currentTime = 0;
-      introMusic.play().catch(() => {
-        console.log("브라우저 정책으로 인해 음악 재생이 차단되었습니다. 버튼을 한 번 더 눌러주세요.");
-      });
-    }
-
-    function stopTensionAudio() {
-      if (!introMusic) return;
-
-      const fadeOut = setInterval(() => {
-        if (introMusic.volume > 0.04) {
-          introMusic.volume = Math.max(0, introMusic.volume - 0.04);
-        } else {
-          introMusic.pause();
-          introMusic.currentTime = 0;
-          clearInterval(fadeOut);
-        }
-      }, 90);
-    }
-
-    function typeMessage(message) {
-      clearInterval(typingTimer);
-      dialogText.textContent = "";
-      isTyping = true;
-
-      let charIndex = 0;
-      typingTimer = setInterval(() => {
-        dialogText.textContent += message.charAt(charIndex);
-        charIndex++;
-
-        if (charIndex >= message.length) {
-          clearInterval(typingTimer);
-          isTyping = false;
-        }
-      }, 34);
-    }
-
-    function showZepPanel() {
-      stopTensionAudio();
-      stage.classList.remove("quake");
-      storyButtons.classList.add("hidden");
-      zepPanel.style.display = "block";
-    }
-
-    function moveToLastMessage() {
-      currentIndex = messages.length - 1;
-      clearInterval(typingTimer);
-      dialogText.textContent = messages[currentIndex];
-      isTyping = false;
-      nextBtn.textContent = "입장";
-    }
-
-    nextBtn.addEventListener("click", () => {
-      enterFullscreen();
-      startTensionAudio();
-
-      if (isTyping) {
-        clearInterval(typingTimer);
-        dialogText.textContent = messages[currentIndex];
-        isTyping = false;
-        return;
-      }
-
-      if (currentIndex < messages.length - 1) {
-        currentIndex++;
-        typeMessage(messages[currentIndex]);
-
-        if (currentIndex === messages.length - 1) {
-          nextBtn.textContent = "ZEP 입장 안내";
-        } else {
-          nextBtn.textContent = "다음";
-        }
-      } else {
-        showZepPanel();
-      }
-    });
-
-    skipBtn.addEventListener("click", () => {
-      enterFullscreen();
-      startTensionAudio();
-      moveToLastMessage();
-    });
-
-    enterZepBtn.addEventListener("click", () => {
-      location.href = ZEP_URL;
-    });
-
-    document.addEventListener("fullscreenchange", () => {
-      const tip = document.getElementById("fullscreenTip");
-      if (tip && document.fullscreenElement) {
-        tip.textContent = "";
-        setTimeout(() => tip.classList.add("hidden"), 1600);
-      }
-    });
-
-
-    setupAutoFullscreen();
-    typeMessage(messages[currentIndex]);
-  </script>
+  <script src="questions.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
